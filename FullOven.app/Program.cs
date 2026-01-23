@@ -5,26 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FullOven.Core.Models;
+using FullOven.Core.Services;
 
-var dishes = new List<Dish>();
-var nextId = 1;
-
-// Предварительно добавляем несколько блюд для демонстрации
-// (в реальном приложении эти данные будут из базы данных)
-dishes.Add(new Dish { Id = nextId++, Name = "Томатный суп", Price = 450, Category = DishCategory.Soups });
-dishes.Add(new Dish { Id = nextId++, Name = "Борщ", Price = 520, Category = DishCategory.Soups });
-dishes.Add(new Dish { Id = nextId++, Name = "Стейк Рибай", Price = 1850, Category = DishCategory.MainDishes });
-dishes.Add(new Dish { Id = nextId++, Name = "Лосось на гриле", Price = 1450, Category = DishCategory.MainDishes });
-dishes.Add(new Dish { Id = nextId++, Name = "Тирамису", Price = 680, Category = DishCategory.Desserts });
-dishes.Add(new Dish { Id = nextId++, Name = "Чизкейк", Price = 590, Category = DishCategory.Desserts });
-dishes.Add(new Dish { Id = nextId++, Name = "Кола", Price = 250, Category = DishCategory.Drinks });
-dishes.Add(new Dish { Id = nextId++, Name = "Сок апельсиновый", Price = 320, Category = DishCategory.Drinks });
-dishes.Add(new Dish { Id = nextId++, Name = "Кофе латте", Price = 380, Category = DishCategory.Drinks });
+// Создаем сервис для работы с блюдами
+var dishService = new DishService();
 
 while (true)
 {
     Console.WriteLine();
-    Console.WriteLine("Full Oven");
+    Console.WriteLine("Меню ресторана v0.2");
     Console.WriteLine("-------------------");
     Console.WriteLine("1) О ресторане");
     Console.WriteLine("2) Показать меню");
@@ -64,10 +53,11 @@ while (true)
             Console.WriteLine("=== Меню ресторана ===");
             Console.WriteLine("Выберите категорию:");
             Console.WriteLine("1) Супы");
-            Console.WriteLine("2) Горячее");
+            Console.WriteLine("2) Горячие блюда");
             Console.WriteLine("3) Десерты");
             Console.WriteLine("4) Напитки");
             Console.WriteLine("5) Все блюда");
+            Console.WriteLine("6) Статистика меню");
             Console.WriteLine("0) Назад в главное меню");
             Console.WriteLine("-------------------");
             Console.Write("Ваш выбор: ");
@@ -84,84 +74,33 @@ while (true)
 
             if (menuChoice == "1") // Супы
             {
-                Console.WriteLine("=== Супы ===");
-                var soups = dishes.Where(d => d.Category == DishCategory.Soups).ToList();
-
-                if (soups.Count == 0)
-                {
-                    Console.WriteLine("В этой категории пока нет блюд.");
-                }
-                else
-                {
-                    foreach (var dish in soups)
-                    {
-                        Console.WriteLine($"  {dish.Name} - {dish.Price:C}");
-                    }
-                }
+                ShowDishesByCategory(DishCategory.Soups, "Супы");
             }
             else if (menuChoice == "2") // Горячее
             {
-                Console.WriteLine("=== Горячие блюда ===");
-                var mainDishes = dishes.Where(d => d.Category == DishCategory.MainDishes).ToList();
-
-                if (mainDishes.Count == 0)
-                {
-                    Console.WriteLine("В этой категории пока нет блюд.");
-                }
-                else
-                {
-                    foreach (var dish in mainDishes)
-                    {
-                        Console.WriteLine($"  {dish.Name} - {dish.Price:C}");
-                    }
-                }
+                ShowDishesByCategory(DishCategory.MainDishes, "Горячие блюда");
             }
             else if (menuChoice == "3") // Десерты
             {
-                Console.WriteLine("=== Десерты ===");
-                var desserts = dishes.Where(d => d.Category == DishCategory.Desserts).ToList();
-
-                if (desserts.Count == 0)
-                {
-                    Console.WriteLine("В этой категории пока нет блюд.");
-                }
-                else
-                {
-                    foreach (var dish in desserts)
-                    {
-                        Console.WriteLine($"  {dish.Name} - {dish.Price:C}");
-                    }
-                }
+                ShowDishesByCategory(DishCategory.Desserts, "Десерты");
             }
             else if (menuChoice == "4") // Напитки
             {
-                Console.WriteLine("=== Напитки ===");
-                var drinks = dishes.Where(d => d.Category == DishCategory.Drinks).ToList();
-
-                if (drinks.Count == 0)
-                {
-                    Console.WriteLine("В этой категории пока нет блюд.");
-                }
-                else
-                {
-                    foreach (var dish in drinks)
-                    {
-                        Console.WriteLine($"  {dish.Name} - {dish.Price:C}");
-                    }
-                }
+                ShowDishesByCategory(DishCategory.Drinks, "Напитки");
             }
             else if (menuChoice == "5") // Все блюда
             {
                 Console.WriteLine("=== Все блюда ===");
 
-                if (dishes.Count == 0)
+                var allDishes = dishService.GetAll();
+                if (allDishes.Count == 0)
                 {
                     Console.WriteLine("Меню пусто.");
                 }
                 else
                 {
                     // Группируем блюда по категориям для красивого отображения
-                    var groupedDishes = dishes
+                    var groupedDishes = allDishes
                         .GroupBy(d => d.Category)
                         .OrderBy(g => g.Key);
 
@@ -177,9 +116,23 @@ while (true)
                     }
                 }
             }
+            else if (menuChoice == "6") // Статистика
+            {
+                Console.WriteLine("=== Статистика меню ===");
+                Console.WriteLine($"Всего блюд: {dishService.GetTotalDishesCount()}");
+                Console.WriteLine($"Супы: {dishService.GetCategoryCount(DishCategory.Soups)} блюд");
+                Console.WriteLine($"Горячие блюда: {dishService.GetCategoryCount(DishCategory.MainDishes)} блюд");
+                Console.WriteLine($"Десерты: {dishService.GetCategoryCount(DishCategory.Desserts)} блюд");
+                Console.WriteLine($"Напитки: {dishService.GetCategoryCount(DishCategory.Drinks)} блюд");
+                Console.WriteLine($"\nСредняя цена блюда: {dishService.GetAveragePrice():C}");
+                Console.WriteLine($"Средняя цена супа: {dishService.GetAveragePriceByCategory(DishCategory.Soups):C}");
+                Console.WriteLine($"Средняя цена горячего: {dishService.GetAveragePriceByCategory(DishCategory.MainDishes):C}");
+                Console.WriteLine($"Средняя цена десерта: {dishService.GetAveragePriceByCategory(DishCategory.Desserts):C}");
+                Console.WriteLine($"Средняя цена напитка: {dishService.GetAveragePriceByCategory(DishCategory.Drinks):C}");
+            }
             else
             {
-                Console.WriteLine("Неверный выбор. Пожалуйста, выберите от 0 до 5.");
+                Console.WriteLine("Неверный выбор. Пожалуйста, выберите от 0 до 6.");
             }
         }
         continue;
@@ -190,8 +143,8 @@ while (true)
         Console.WriteLine();
         Console.WriteLine("=== Бронирование стола ===");
         Console.WriteLine("Для бронирования стола позвоните по горячей линии:");
-        Console.WriteLine("📞 +7 (999) 123-45-67");
-        Console.WriteLine("⏰ Часы работы для бронирования: 10:00 - 22:00");
+        Console.WriteLine(" +7 (999) 123-45-67");
+        Console.WriteLine(" Часы работы для бронирования: 10:00 - 22:00");
         continue;
     }
 
@@ -199,9 +152,9 @@ while (true)
     {
         Console.WriteLine();
         Console.WriteLine("=== Наши места на карте ===");
-        Console.WriteLine("📍 Основной ресторан: ул. Главная, д. 15, Москва");
-        Console.WriteLine("📍 Филиал: пр. Победы, д. 42, Санкт-Петербург");
-        Console.WriteLine("📍 Летняя веранда: набережная реки, д. 8, Сочи");
+        Console.WriteLine("Основной ресторан: ул. Главная, д. 15, Москва");
+        Console.WriteLine("Филиал: пр. Победы, д. 42, Санкт-Петербург");
+        Console.WriteLine("Летняя веранда: набережная реки, д. 8, Сочи");
         Console.WriteLine();
         Console.WriteLine("Наш сайт с картой: www.fulloven.ru/locations");
         continue;
@@ -211,13 +164,32 @@ while (true)
     {
         Console.WriteLine();
         Console.WriteLine("=== Наши контакты ===");
-        Console.WriteLine("📞 Телефон: +7 (999) 123-45-67");
-        Console.WriteLine("📧 Email: info-fulloven@mail.ru");
-        Console.WriteLine("🌐 Сайт: www.fulloven.ru");
+        Console.WriteLine(" Телефон: +7 (999) 123-45-67");
+        Console.WriteLine("Email: info-fulloven@mail.ru");
+        Console.WriteLine("Сайт: www.fulloven.ru");
         continue;
     }
 
     Console.WriteLine("Неизвестная команда. Введите цифру от 0 до 5.");
+}
+
+// Вспомогательный метод для отображения блюд по категории
+void ShowDishesByCategory(DishCategory category, string categoryName)
+{
+    Console.WriteLine($"=== {categoryName} ===");
+    var dishes = dishService.GetByCategory(category);
+
+    if (dishes.Count == 0)
+    {
+        Console.WriteLine("В этой категории пока нет блюд.");
+    }
+    else
+    {
+        foreach (var dish in dishes)
+        {
+            Console.WriteLine($"  {dish.Name} - {dish.Price:C}");
+        }
+    }
 }
 
 // Вспомогательный метод для получения читаемого имени категории
@@ -228,6 +200,6 @@ string GetCategoryName(DishCategory category)
         DishCategory.Soups => "Супы",
         DishCategory.MainDishes => "Горячие блюда",
         DishCategory.Desserts => "Десерты",
-        DishCategory.Drinks => "Напитки"
+        DishCategory.Drinks => "Напитки",
     };
 }
