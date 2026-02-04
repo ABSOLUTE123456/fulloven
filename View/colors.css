@@ -1,0 +1,10 @@
+:root {
+    --primary-gold: #D4AF37;
+    --dark-bg: #1a1a1a;
+    --light-bg: #f8f5f0;
+    --text-dark: #333333;
+    --text-light: #ffffff;
+    --accent-red: #8B0000;
+    --shadow: 0 5px 15px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
+}
